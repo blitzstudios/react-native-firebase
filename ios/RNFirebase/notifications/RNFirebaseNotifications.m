@@ -101,20 +101,30 @@ RCT_EXPORT_MODULE();
 }
 
 RCT_EXPORT_METHOD(complete:(NSString*)handlerKey fetchResult:(UIBackgroundFetchResult)fetchResult) {
-    if (handlerKey != nil) {
-        void (^fetchCompletionHandler)(UIBackgroundFetchResult) = fetchCompletionHandlers[handlerKey];
-        if (fetchCompletionHandler != nil) {
-            fetchCompletionHandlers[handlerKey] = nil;
+if (handlerKey != nil) {
+    void (^fetchCompletionHandler)(UIBackgroundFetchResult) = fetchCompletionHandlers[handlerKey];
+    if (fetchCompletionHandler != nil) {
+        fetchCompletionHandlers[handlerKey] = nil;
+        @try {
             fetchCompletionHandler(fetchResult);
-        } else {
-            void(^completionHandler)(void) = completionHandlers[handlerKey];
-            if (completionHandler != nil) {
-                completionHandlers[handlerKey] = nil;
+        } 
+        @catch (NSException * e) {
+            NSLog(@"Exception fetchCompletionHandler: %@", e);
+        };
+    } else {
+        void(^completionHandler)(void) = completionHandlers[handlerKey];
+        if (completionHandler != nil) {
+            completionHandlers[handlerKey] = nil;
+            @try {
                 completionHandler();
             }
+            @catch (NSException * e) {
+                NSLog(@"Exception completionHandler: %@", e);
+            };
+
         }
     }
-}
+}}
 
 // Listen for background messages
 - (void)didReceiveRemoteNotification:(NSDictionary *)userInfo
